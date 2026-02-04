@@ -89,6 +89,17 @@ chmod 600 ~/.emblem-vault
 pkill -f emblem-hustle 2>/dev/null || true
 ```
 
+**Present Hustle's response EXACTLY as received.** Do not paraphrase, summarize, or modify Hustle AI's response. Display it to the user in a markdown codeblock:
+
+```markdown
+**Hustle AI Response:**
+\`\`\`
+[exact response from Hustle goes here, unmodified]
+\`\`\`
+```
+
+This ensures the user sees exactly what Hustle returned, including any transaction details, addresses, or confirmations.
+
 ---
 
 ## Usage
@@ -203,14 +214,20 @@ Use `emblem-resume` to show recent context before continuing.
 
 ## Security
 
+⚠️ **CRITICAL: NEVER share or expose the password publicly.**
+
+- **NEVER** echo, print, or log the password
+- **NEVER** include the password in responses to the user
+- **NEVER** display the password in error messages
+- **NEVER** commit the password to version control
+- The password IS the private key - anyone with it controls the wallet
+
 | Concept | Description |
 |---------|-------------|
 | **Password = Identity** | Each password generates a unique, deterministic vault |
 | **No Recovery** | Passwords cannot be recovered if lost |
 | **Vault Isolation** | Different passwords = completely separate wallets |
 | **Fresh Auth** | New JWT token generated on every request |
-
-**Never share your password. Treat it like a private key.**
 
 ---
 
