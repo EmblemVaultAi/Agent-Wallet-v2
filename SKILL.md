@@ -252,6 +252,20 @@ This injects the password as `$EMBLEM_PASSWORD` environment variable.
 
 ---
 
+## Updating
+
+### Update the Skill
+```bash
+cd ~/.openclaw/skills/emblem-wallet && git pull
+```
+
+### Update the CLI
+```bash
+npm update -g @emblemvault/agentwallet
+```
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
