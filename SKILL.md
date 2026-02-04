@@ -78,6 +78,19 @@ chmod 600 ~/.emblem-vault
 
 ---
 
+## Important: Execution Rules
+
+**DO NOT impose timeouts.** Hustle AI queries can take up to 2 minutes. This is normal behavior, not a stall.
+
+**DO NOT assume Hustle is stalled.** Wait for the response to complete naturally.
+
+**Cleanup before next request.** Ensure no leftover emblem-hustle processes are running before starting a new query:
+```bash
+pkill -f emblem-hustle 2>/dev/null || true
+```
+
+---
+
 ## Usage
 
 ### Chat with Hustle AI
@@ -126,6 +139,22 @@ emblem-hustle -p "$PASSWORD" -m "What's trending on Solana right now?"
 ```bash
 emblem-hustle -p "$PASSWORD" -m "Send 0.1 ETH to 0x..."
 ```
+
+---
+
+## Communication Style
+
+**CRITICAL: Use verbose, natural language.**
+
+Hustle AI interprets terse commands as "$0" transactions. Always explain your intent in full sentences.
+
+| ❌ Bad (terse) | ✅ Good (verbose) |
+|----------------|-------------------|
+| `"SOL balance"` | `"What is my current SOL balance on Solana?"` |
+| `"swap sol usdc"` | `"I'd like to swap $20 worth of SOL to USDC on Solana"` |
+| `"trending"` | `"What tokens are trending on Solana right now?"` |
+
+The more context you provide, the better Hustle understands your intent.
 
 ---
 
@@ -214,6 +243,7 @@ This injects the password as `$EMBLEM_PASSWORD` environment variable.
 | `Authentication failed` | Check password is 16+ characters |
 | `Empty response` | Retry - Hustle AI may be temporarily unavailable |
 | `HTTP 401` | JWT expired, will auto-refresh on next request |
+| **Slow response** | Normal - queries can take up to 2 minutes |
 
 ---
 
