@@ -1,0 +1,232 @@
+---
+name: emblem-wallet
+description: Connect to EmblemVault and manage crypto wallets via Hustle AI. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin.
+metadata: {"emoji":"💎","homepage":"https://emblemvault.ai","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblem-hustle"]},"install":["npm install -g @emblemvault/agentwallet"]}
+---
+
+# Emblem Agent Wallet
+
+Connect to EmblemVault's Hustle AI for autonomous wallet management across 7 blockchain networks with 256+ trading tools.
+
+---
+
+## Installation
+
+Install the CLI globally:
+
+```bash
+npm install -g @emblemvault/agentwallet
+```
+
+This provides three commands:
+- `emblem-hustle` - Chat with Hustle AI
+- `emblem-resume` - Resume with conversation context
+- `emblem-reset` - Clear conversation history
+
+---
+
+## How Authentication Works
+
+**Login and signup are the same action.** There is no separate registration step.
+
+| Scenario | What Happens |
+|----------|--------------|
+| **First time with a password** | A new vault is created with unique wallet addresses |
+| **Same password again** | Returns the same vault (deterministic) |
+| **Different password** | Creates a completely different vault |
+
+**Important:**
+- Password must be at least 16 characters
+- Password = Identity (treat it like a private key)
+- No recovery option if password is lost
+- No email, no browser, no 2FA - just the password
+
+---
+
+## Credential Discovery
+
+Before making requests, locate the password using this priority:
+
+### 1. Environment Variable (Preferred)
+```bash
+if [ -n "$EMBLEM_PASSWORD" ]; then
+  PASSWORD="$EMBLEM_PASSWORD"
+fi
+```
+
+### 2. User Home File
+```bash
+if [ -z "$PASSWORD" ] && [ -f ~/.emblem-vault ]; then
+  PASSWORD=$(cat ~/.emblem-vault)
+fi
+```
+
+### 3. No Credentials Found
+
+Ask the user:
+> "I need your EmblemVault password to connect to Hustle AI. This password must be at least 16 characters.
+>
+> **Note:** If this is your first time, entering a new password will create a new wallet. If you've used this before, use the same password to access your existing wallet.
+>
+> Would you like to provide a password?"
+
+Once provided, save it:
+```bash
+echo "USER_PROVIDED_PASSWORD" > ~/.emblem-vault
+chmod 600 ~/.emblem-vault
+```
+
+---
+
+## Usage
+
+### Chat with Hustle AI
+
+```bash
+emblem-hustle -p "$PASSWORD" -m "Your message here"
+```
+
+### Resume Conversation with Context
+
+```bash
+emblem-resume -p "$PASSWORD" -m "Follow-up message"
+```
+
+### Reset Conversation History
+
+```bash
+emblem-reset
+```
+
+---
+
+## Example Queries
+
+### Check Wallet Addresses (First Thing to Do)
+```bash
+emblem-hustle -p "$PASSWORD" -m "What are my wallet addresses?"
+```
+
+### Check Balances
+```bash
+emblem-hustle -p "$PASSWORD" -m "Show all my balances across all chains"
+```
+
+### Swap Tokens
+```bash
+emblem-hustle -p "$PASSWORD" -m "Swap $20 worth of SOL to USDC"
+```
+
+### Get Market Data
+```bash
+emblem-hustle -p "$PASSWORD" -m "What's trending on Solana right now?"
+```
+
+### Transfer Tokens
+```bash
+emblem-hustle -p "$PASSWORD" -m "Send 0.1 ETH to 0x..."
+```
+
+---
+
+## Capabilities
+
+Hustle AI provides access to:
+
+| Category | Features |
+|----------|----------|
+| **Chains** | Solana, Ethereum, Base, BSC, Polygon, Hedera, Bitcoin |
+| **Trading** | Swaps, limit orders, conditional orders, stop-losses |
+| **DeFi** | LP management, yield farming, liquidity pools |
+| **Market Data** | CoinGlass, DeFiLlama, Birdeye, LunarCrush |
+| **NFTs** | OpenSea integration, transfers, listings |
+| **Bridges** | Cross-chain swaps via ChangeNow |
+| **Memecoins** | Pump.fun discovery, trending analysis |
+| **Predictions** | PolyMarket betting and positions |
+
+---
+
+## Wallet Addresses
+
+Each password deterministically generates wallet addresses across all chains:
+
+| Chain | Address Type |
+|-------|-------------|
+| **Solana** | Native SPL wallet |
+| **EVM** | Single address for ETH, Base, BSC, Polygon |
+| **Hedera** | Account ID (0.0.XXXXXXX) |
+| **Bitcoin** | Taproot, SegWit, and Legacy addresses |
+
+Ask Hustle: `"What are my wallet addresses?"` to retrieve all addresses.
+
+---
+
+## Conversation Persistence
+
+The CLI maintains conversation history:
+- History persists across sessions
+- Hustle has context from previous messages
+- Auto-prunes to last 50 messages
+
+Use `emblem-resume` to show recent context before continuing.
+
+---
+
+## Security
+
+| Concept | Description |
+|---------|-------------|
+| **Password = Identity** | Each password generates a unique, deterministic vault |
+| **No Recovery** | Passwords cannot be recovered if lost |
+| **Vault Isolation** | Different passwords = completely separate wallets |
+| **Fresh Auth** | New JWT token generated on every request |
+
+**Never share your password. Treat it like a private key.**
+
+---
+
+## OpenClaw Configuration (Optional)
+
+Configure credentials in `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "skills": {
+    "entries": {
+      "emblem-wallet": {
+        "enabled": true,
+        "apiKey": "your-secure-password-min-16-chars"
+      }
+    }
+  }
+}
+```
+
+This injects the password as `$EMBLEM_PASSWORD` environment variable.
+
+---
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `emblem-hustle: command not found` | Run: `npm install -g @emblemvault/agentwallet` |
+| `Authentication failed` | Check password is 16+ characters |
+| `Empty response` | Retry - Hustle AI may be temporarily unavailable |
+| `HTTP 401` | JWT expired, will auto-refresh on next request |
+
+---
+
+## Quick Reference
+
+```bash
+# First time? Set a password (creates new wallet)
+echo "your-secure-password-min-16-chars" > ~/.emblem-vault
+
+# Returning? Use same password to access existing wallet
+emblem-hustle -p "$(cat ~/.emblem-vault)" -m "What are my balances?"
+
+# Or use environment variable
+export EMBLEM_PASSWORD="your-secure-password-min-16-chars"
+emblem-hustle -p "$EMBLEM_PASSWORD" -m "What tokens do I have?"
+```
