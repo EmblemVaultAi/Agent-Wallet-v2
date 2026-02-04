@@ -5,9 +5,9 @@
   "main": "enhanced-hustle.js",
   "type": "module",
   "bin": {
-    "emblem-hustle": "./enhanced-hustle.js",
-    "emblem-resume": "./resume-conversation.js",
-    "emblem-reset": "./reset-conversation.js"
+    "emblem-hustle": "enhanced-hustle.js",
+    "emblem-resume": "resume-conversation.js",
+    "emblem-reset": "reset-conversation.js"
   },
   "scripts": {
     "start": "node enhanced-hustle.js",
@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/EmblemCompany/EmblemAi-AgentWallet.git"
+    "url": "git+https://github.com/EmblemCompany/EmblemAi-AgentWallet.git"
   },
   "homepage": "https://emblemvault.dev",
   "engines": {
