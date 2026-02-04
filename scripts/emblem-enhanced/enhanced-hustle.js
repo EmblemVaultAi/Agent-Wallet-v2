@@ -91,7 +91,7 @@ class EnhancedHustle {
 program
   .name('enhanced-hustle')
   .description('Stateful conversation with EmblemVault Hustle AI')
-  .version('1.0.0')
+  .version('1.1.1')
   .requiredOption('-p, --password <password>', 'EmblemVault password')
   .requiredOption('-m, --message <message>', 'Message to send to Hustle AI')
   .parse();
