@@ -6,7 +6,26 @@ metadata: {"emoji":"💎","homepage":"https://emblemvault.dev","primaryEnv":"EMB
 
 # Emblem Agent Wallet
 
-Connect to EmblemVault's Hustle AI for autonomous wallet management across 7 blockchain networks with 256+ trading tools.
+Connect to **Agent Hustle** - EmblemVault's autonomous crypto AI with 256+ trading tools across 7 blockchains.
+
+---
+
+## Quick Start - How to Use This Skill
+
+When this skill loads, you can ask Agent Hustle anything about crypto:
+
+**Example commands to try:**
+- "What are my wallet addresses?"
+- "Show my balances across all chains"
+- "What's trending on Solana?"
+- "Swap $20 of SOL to USDC"
+- "Send 0.1 ETH to 0x..."
+
+**To invoke this skill, say things like:**
+- "Use my Emblem wallet to check balances"
+- "Ask Agent Hustle what tokens I have"
+- "Connect to EmblemVault"
+- "Check my crypto portfolio"
 
 ---
 

@@ -1,6 +1,6 @@
 # @emblemvault/agentwallet
 
-CLI for EmblemVault's Hustle AI - autonomous crypto wallet management across 7 blockchains.
+CLI tools for **Agent Hustle** - EmblemVault's autonomous crypto AI with 256+ trading tools across 7 blockchains.
 
 ## Install
 
@@ -10,8 +10,18 @@ npm install -g @emblemvault/agentwallet
 
 ## Commands
 
+### Interactive Chat (Recommended for Humans)
 ```bash
-# Chat with Hustle AI
+# Full interactive CLI with streaming, tools, and auth menu
+hustle-chat --password "your-password-16-chars-min"
+
+# Or let it prompt for password
+hustle-chat
+```
+
+### Single-Shot Commands (For AI Agents)
+```bash
+# Send a single message to Agent Hustle
 emblem-hustle -p "your-password-16-chars-min" -m "What are my wallet addresses?"
 
 # Resume with conversation context
@@ -19,6 +29,22 @@ emblem-resume -p "your-password" -m "Follow-up question"
 
 # Reset conversation history
 emblem-reset
+```
+
+## Example Queries
+
+```bash
+# Check wallet addresses
+emblem-hustle -p "$PASSWORD" -m "What are my wallet addresses?"
+
+# Check balances
+emblem-hustle -p "$PASSWORD" -m "Show all my balances across all chains"
+
+# Swap tokens
+emblem-hustle -p "$PASSWORD" -m "Swap $20 worth of SOL to USDC"
+
+# Market trends
+emblem-hustle -p "$PASSWORD" -m "What's trending on Solana right now?"
 ```
 
 ## Authentication

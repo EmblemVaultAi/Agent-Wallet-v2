@@ -1,13 +1,14 @@
 {
   "name": "@emblemvault/agentwallet",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "CLI for EmblemVault Hustle AI - autonomous crypto wallet management",
   "main": "enhanced-hustle.js",
   "type": "module",
   "bin": {
     "emblem-hustle": "enhanced-hustle.js",
     "emblem-resume": "resume-conversation.js",
-    "emblem-reset": "reset-conversation.js"
+    "emblem-reset": "reset-conversation.js",
+    "hustle-chat": "hustle-chat.js"
   },
   "scripts": {
     "start": "node enhanced-hustle.js",
@@ -16,7 +17,10 @@
   },
   "dependencies": {
     "node-fetch": "^3.3.2",
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "hustle-incognito": "^0.5.0",
+    "@emblemvault/auth-sdk": "^1.0.0",
+    "dotenv": "^16.3.1"
   },
   "keywords": [
     "ai",
@@ -45,6 +49,7 @@
     "enhanced-hustle.js",
     "resume-conversation.js",
     "reset-conversation.js",
+    "hustle-chat.js",
     "auth.js",
     "conversation.js",
     "README.md"
