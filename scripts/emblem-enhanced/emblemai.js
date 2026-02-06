@@ -41,6 +41,14 @@ async function main() {
     const initialStream = hasFlag(['--stream']);
     const passwordArg = getArg(['--password', '-p']);
     const messageArg = getArg(['--message', '-m']);
+    const hustleUrlArg = getArg(['--hustle-url']);
+    const authUrlArg = getArg(['--auth-url']);
+    const apiUrlArg = getArg(['--api-url']);
+
+    // Endpoint overrides (CLI args > env vars > defaults)
+    const hustleApiUrl = hustleUrlArg || process.env.HUSTLE_API_URL || undefined;
+    const authUrl = authUrlArg || process.env.EMBLEM_AUTH_URL || undefined;
+    const apiUrl = apiUrlArg || process.env.EMBLEM_API_URL || undefined;
 
     // Conversation history file
     const historyFile = path.join(os.homedir(), '.emblemai-history.json');
@@ -160,10 +168,14 @@ async function main() {
       console.log('Authenticating with Agent Hustle...');
     }
 
-    const authSdk = new EmblemAuthSDK({
+    const authSdkConfig = {
       appId: 'emblem-agent-wallet',
       persistSession: false,
-    });
+    };
+    if (authUrl) authSdkConfig.authUrl = authUrl;
+    if (apiUrl) authSdkConfig.apiUrl = apiUrl;
+
+    const authSdk = new EmblemAuthSDK(authSdkConfig);
 
     const session = await authSdk.authenticatePassword({ password });
     if (!session) {
@@ -179,10 +191,13 @@ async function main() {
       model: null,
     };
 
-    const client = new HustleIncognitoClient({
+    const hustleClientConfig = {
       sdk: authSdk,
       debug: settings.debug,
-    });
+    };
+    if (hustleApiUrl) hustleClientConfig.hustleApiUrl = hustleApiUrl;
+
+    const client = new HustleIncognitoClient(hustleClientConfig);
 
     // Intent context for auto-tools mode
     let lastIntentContext = null;
@@ -273,6 +288,11 @@ async function main() {
       console.log('  /tools         - List tool categories');
       console.log('  /tools add|remove <id> - Manage tools');
       console.log('  /tools clear   - Enable auto-tools mode');
+      console.log('  /payment            - Show PAYG billing status');
+      console.log('  /payment enable     - Enable pay-as-you-go billing');
+      console.log('  /payment disable    - Disable pay-as-you-go billing');
+      console.log('  /payment token <T>  - Set payment token (SOL, ETH, HUSTLE, etc.)');
+      console.log('  /payment mode <M>   - Set payment mode (pay_per_request, debt_accumulation)');
       console.log('  /exit          - Exit the CLI');
     }
 
@@ -283,12 +303,16 @@ async function main() {
       console.log(`  App ID:     emblem-agent-wallet`);
       console.log(`  Vault ID:   ${sess?.user?.vaultId || 'N/A'}`);
       console.log(`  Auth Mode:  Password (headless)`);
+      if (hustleApiUrl) console.log(`  Hustle API: ${hustleApiUrl}`);
+      if (authUrl) console.log(`  Auth URL:   ${authUrl}`);
+      if (apiUrl) console.log(`  API URL:    ${apiUrl}`);
       console.log(`  Model:      ${settings.model || 'API default'}`);
       console.log(`  Streaming:  ${settings.stream ? 'ON' : 'OFF'}`);
       console.log(`  Debug:      ${settings.debug ? 'ON' : 'OFF'}`);
       console.log(`  History:    ${settings.retainHistory ? 'ON' : 'OFF'}`);
       console.log(`  Messages:   ${history.messages.length}`);
       console.log(`  Tools:      ${settings.selectedTools.length > 0 ? settings.selectedTools.join(', ') : 'Auto-tools mode'}`);
+      console.log('  PAYG:      Use /payment to view billing status');
     }
 
     // ==================== AUTH MENU ====================
@@ -488,6 +512,42 @@ async function main() {
         process.exit(0);
       } catch (error) {
         console.error('Error during logout:', error.message);
+      }
+    }
+
+    // ==================== PAYG MANAGEMENT ====================
+    async function showPaygStatus() {
+      console.log('\nFetching PAYG billing status...');
+      try {
+        const status = await client.getPaygStatus();
+        console.log('\n========================================');
+        console.log('         PAYG Billing Status');
+        console.log('========================================');
+        console.log('');
+        console.log(`  Enabled:         ${status.enabled ? 'YES' : 'NO'}`);
+        console.log(`  Mode:            ${status.mode || 'N/A'}`);
+        console.log(`  Payment Token:   ${status.payment_token || 'N/A'}`);
+        console.log(`  Payment Chain:   ${status.payment_chain || 'N/A'}`);
+        console.log(`  Blocked:         ${status.is_blocked ? 'YES' : 'NO'}`);
+        console.log(`  Total Debt:      $${(status.total_debt_usd || 0).toFixed(4)}`);
+        console.log(`  Total Paid:      $${(status.total_paid_usd || 0).toFixed(4)}`);
+        console.log(`  Debt Ceiling:    $${(status.debt_ceiling_usd || 0).toFixed(2)}`);
+        console.log(`  Pending Charges: ${status.pending_charges || 0}`);
+        console.log('');
+        if (status.available_tokens && status.available_tokens.length > 0) {
+          console.log('  Available Tokens:');
+          status.available_tokens.forEach(t => console.log(`    - ${t}`));
+        }
+        console.log('');
+        console.log('========================================');
+        console.log('');
+        console.log('Commands:');
+        console.log('  /payment enable          - Enable PAYG billing');
+        console.log('  /payment disable         - Disable PAYG billing');
+        console.log('  /payment token <TOKEN>   - Set payment token');
+        console.log('  /payment mode <MODE>     - Set payment mode');
+      } catch (error) {
+        console.error('Error fetching PAYG status:', error.message);
       }
     }
 
@@ -789,6 +849,66 @@ async function main() {
           return true;
         }
 
+        return true;
+      }
+
+      if (command.startsWith('/payment')) {
+        const parts = command.split(' ');
+
+        if (parts.length === 1) {
+          await showPaygStatus();
+          return true;
+        }
+
+        const subCommand = parts[1];
+
+        if (subCommand === 'enable') {
+          try {
+            const result = await client.configurePayg({ enabled: true });
+            console.log(result.success ? 'PAYG billing enabled.' : 'Failed to enable PAYG.');
+          } catch (error) {
+            console.error('Error enabling PAYG:', error.message);
+          }
+          return true;
+        }
+
+        if (subCommand === 'disable') {
+          try {
+            const result = await client.configurePayg({ enabled: false });
+            console.log(result.success ? 'PAYG billing disabled.' : 'Failed to disable PAYG.');
+          } catch (error) {
+            console.error('Error disabling PAYG:', error.message);
+          }
+          return true;
+        }
+
+        if (subCommand === 'token' && parts[2]) {
+          const token = parts[2].toUpperCase();
+          try {
+            const result = await client.configurePayg({ payment_token: token });
+            console.log(result.success ? `Payment token set to: ${token}` : 'Failed to set payment token.');
+          } catch (error) {
+            console.error('Error setting payment token:', error.message);
+          }
+          return true;
+        }
+
+        if (subCommand === 'mode' && parts[2]) {
+          const mode = parts[2];
+          if (mode !== 'pay_per_request' && mode !== 'debt_accumulation') {
+            console.log('Invalid mode. Use: pay_per_request or debt_accumulation');
+            return true;
+          }
+          try {
+            const result = await client.configurePayg({ mode });
+            console.log(result.success ? `Payment mode set to: ${mode}` : 'Failed to set payment mode.');
+          } catch (error) {
+            console.error('Error setting payment mode:', error.message);
+          }
+          return true;
+        }
+
+        console.log('Invalid /payment command. Use /payment for status, or /payment enable|disable|token|mode');
         return true;
       }
 
