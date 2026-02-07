@@ -1,6 +1,6 @@
 ---
 name: emblem-ai-agent-wallet
-description: Connect to EmblemVault and manage crypto wallets via Hustle AI. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin. Use when the user wants to trade crypto, check balances, swap tokens, or interact with blockchain wallets.
+description: Connect to EmblemVault and manage crypto wallets via Emblem AI - Agent Hustle. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin. Use when the user wants to trade crypto, check balances, swap tokens, or interact with blockchain wallets.
 metadata:
   emoji: "🛡️"
   homepage: "https://emblemvault.dev"
@@ -8,7 +8,7 @@ metadata:
   requires: "node, npm, emblemai"
   install: "npm install -g @emblemvault/agentwallet"
   author: "EmblemCompany"
-  version: "1.0"
+  version: "1.3.0"
 ---
 
 # Emblem Agent Wallet
