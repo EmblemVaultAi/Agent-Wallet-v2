@@ -1,7 +1,7 @@
 {
   "name": "@emblemvault/agentwallet",
-  "version": "1.3.0",
-  "description": "CLI for EmblemVault Hustle AI - autonomous crypto wallet management",
+  "version": "2.0.0",
+  "description": "CLI for EmblemVault Hustle AI - autonomous crypto wallet management with TUI",
   "main": "emblemai.js",
   "type": "module",
   "bin": {
@@ -9,11 +9,15 @@
   },
   "scripts": {
     "start": "node emblemai.js",
+    "simple": "node emblemai.js --simple",
     "reset": "node emblemai.js --reset"
   },
   "dependencies": {
     "hustle-incognito": "^0.5.2",
     "@emblemvault/auth-sdk": "^2.3.16",
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
+    "chalk": "^5.3.0",
     "dotenv": "^16.3.1"
   },
   "keywords": [
@@ -27,7 +31,8 @@
     "ethereum",
     "defi",
     "trading",
-    "openclaw"
+    "openclaw",
+    "tui"
   ],
   "author": "EmblemVault",
   "license": "MIT",
@@ -41,6 +46,8 @@
   },
   "files": [
     "emblemai.js",
+    "src/",
+    "docs/",
     "README.md"
   ]
 }
