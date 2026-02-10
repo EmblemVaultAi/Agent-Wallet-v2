@@ -109,12 +109,14 @@ const messageArg = getArg(['--message', '-m']);
 const hustleUrlArg = getArg(['--hustle-url']);
 const authUrlArg = getArg(['--auth-url']);
 const apiUrlArg = getArg(['--api-url']);
+const elizaUrlArg = getArg(['--eliza-url']);
 const logFileArg = getArg(['--log-file']);
 
 // Endpoint overrides
 const hustleApiUrl = hustleUrlArg || process.env.HUSTLE_API_URL || undefined;
 const authUrl = authUrlArg || process.env.EMBLEM_AUTH_URL || undefined;
 const apiUrl = apiUrlArg || process.env.EMBLEM_API_URL || undefined;
+const elizaApiUrl = elizaUrlArg || process.env.ELIZA_API_URL || undefined;
 
 // ── Stream Logger ──────────────────────────────────────────────────────────
 
@@ -280,6 +282,11 @@ async function main() {
     const creds = readCredentialFile() || {};
     const bankrKey = process.env.BANKR_API_KEY || creds.bankrApiKey;
     const pluginConfig = bankrKey ? { bankr: { bankrApi: { apiKey: bankrKey } } } : {};
+
+    // Wire ElizaOS plugin config with API URL if provided
+    if (elizaApiUrl) {
+      pluginConfig.elizaos = { ...(pluginConfig.elizaos || {}), elizaApiUrl };
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // AGENT MODE — single message, output, exit
