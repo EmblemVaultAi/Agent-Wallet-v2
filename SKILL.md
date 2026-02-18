@@ -3,7 +3,7 @@ name: emblem-ai-agent-wallet
 description: Connect to EmblemVault and manage crypto wallets via Emblem AI - Agent Hustle. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin. Use when the user wants to trade crypto, check balances, swap tokens, or interact with blockchain wallets.
 homepage: https://emblemvault.dev
 user-invocable: true
-metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.5","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
+metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.6","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
 ---
 
 # Emblem Agent Wallet
@@ -335,11 +335,22 @@ Log file defaults to `~/.emblemai-stream.log`. Override with `--log-file <path>`
 | Variable | Description |
 |----------|-------------|
 | `EMBLEM_PASSWORD` | Authentication password |
-| `HUSTLE_API_URL` | Override Hustle API endpoint |
-| `EMBLEM_AUTH_URL` | Override auth service endpoint |
-| `EMBLEM_API_URL` | Override API service endpoint |
-
 CLI arguments override environment variables when both are provided.
+
+---
+
+## Permissions and Safe Mode
+
+The agent operates in **safe mode by default**. Any action that affects the wallet requires the user's explicit confirmation before execution:
+
+- **Transactions** (swaps, sends, transfers) -- the agent presents the details and asks for approval
+- **Signing** (message signing, transaction signing) -- requires explicit user consent
+- **Order placement** (limit orders, stop-losses) -- must be confirmed before submission
+- **DeFi operations** (LP deposits, yield farming) -- user must approve each action
+
+Read-only operations (checking balances, viewing addresses, market data, portfolio queries) do not require confirmation and execute immediately.
+
+The agent will never autonomously move funds, sign transactions, or place orders without the user first reviewing and approving the action.
 
 ---
 
