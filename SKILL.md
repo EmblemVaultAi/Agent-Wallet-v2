@@ -3,7 +3,7 @@ name: emblem-ai-agent-wallet
 description: Connect to EmblemVault and manage crypto wallets via Emblem AI - Agent Hustle. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin. Use when the user wants to trade crypto, check balances, swap tokens, or interact with blockchain wallets.
 homepage: https://emblemvault.dev
 user-invocable: true
-metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.6","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
+metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.7","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"config_paths":["~/.emblemai/.env","~/.emblemai/.env.keys","~/.emblemai/session.json","~/.emblemai/history/"],"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
 ---
 
 # Emblem Agent Wallet
@@ -432,20 +432,34 @@ This places the credential files in `~/.emblemai/` so you can authenticate immed
 | **No Recovery** | Passwords cannot be recovered if lost |
 | **Vault Isolation** | Different passwords = completely separate wallets |
 | **Fresh Auth** | New JWT token generated on every request |
+| **Safe Mode** | All wallet actions require explicit user confirmation |
+
+**Recommendations for first-time users:**
+- Use browser auth (`emblemai` with no flags) over password-in-ENV for interactive use
+- Start with a test wallet (use a throwaway password) before connecting significant assets
+- If using `EMBLEM_PASSWORD` in automation, restrict the host environment and use least-privilege access
 
 ---
 
 ## File Locations
 
-| File | Purpose |
-|------|---------|
-| `~/.emblemai/.env` | dotenvx-encrypted credentials (EMBLEM_PASSWORD) |
-| `~/.emblemai/.env.keys` | dotenvx private decryption key (chmod 600) |
-| `~/.emblemai/session.json` | Saved browser auth session (auto-managed) |
-| `~/.emblemai/history/{vaultId}.json` | Conversation history (per vault) |
-| `~/.emblemai-stream.log` | Stream log (when enabled) |
+All persistent data is stored under `~/.emblemai/` (created on first run with `chmod 700`).
 
-Legacy credentials (`~/.emblem-vault`) are automatically migrated to the encrypted format on first run.
+| File | Purpose | Sensitive | Permissions |
+|------|---------|-----------|-------------|
+| `~/.emblemai/.env` | Encrypted credentials (EMBLEM_PASSWORD) | Yes -- AES-256-GCM encrypted | `600` |
+| `~/.emblemai/.env.keys` | Decryption key for `.env` | Yes -- controls access to credentials | `600` |
+| `~/.emblemai/session.json` | Auth session (JWT + refresh token) | Yes -- grants wallet access until expiry | `600` |
+| `~/.emblemai/history/{vaultId}.json` | Conversation history (per vault) | No | `600` |
+| `~/.emblemai-stream.log` | Stream log (when enabled via `/log`) | No | default |
+
+### Encryption Details
+
+Credentials are encrypted at rest using [dotenvx](https://dotenvx.com/), which uses **AES-256-GCM** symmetric encryption. The encryption key is stored in `~/.emblemai/.env.keys` and the encrypted payload in `~/.emblemai/.env`. Both files are created with `chmod 600` (owner read/write only). The decryption key never leaves the local machine.
+
+Session tokens (`session.json`) contain a short-lived JWT (refreshed automatically) and a refresh token valid for 7 days. Sessions are not encrypted on disk but are restricted to `chmod 600`. Logging out via `/auth` > Logout deletes the session file.
+
+Legacy credentials (`~/.emblem-vault`) are automatically migrated to the encrypted format on first run and the original is backed up.
 
 ---
 
