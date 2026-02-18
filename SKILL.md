@@ -3,7 +3,7 @@ name: emblem-ai-agent-wallet
 description: Connect to EmblemVault and manage crypto wallets via Emblem AI - Agent Hustle. Supports Solana, Ethereum, Base, BSC, Polygon, Hedera, and Bitcoin. Use when the user wants to trade crypto, check balances, swap tokens, or interact with blockchain wallets.
 homepage: https://emblemvault.dev
 user-invocable: true
-metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.7","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"config_paths":["~/.emblemai/.env","~/.emblemai/.env.keys","~/.emblemai/session.json","~/.emblemai/history/"],"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
+metadata: {"openclaw":{"emoji":"🛡️","version":"3.0.8","homepage":"https://emblemvault.dev","primaryEnv":"EMBLEM_PASSWORD","requires":{"bins":["node","npm","emblemai"],"env":["EMBLEM_PASSWORD"]},"config_paths":["~/.emblemai/.env","~/.emblemai/.env.keys","~/.emblemai/session.json","~/.emblemai/history/"],"install":[{"id":"npm","kind":"npm","package":"@emblemvault/agentwallet","bins":["emblemai"],"label":"Install Agent Wallet CLI"}]}}
 ---
 
 # Emblem Agent Wallet
@@ -434,11 +434,6 @@ This places the credential files in `~/.emblemai/` so you can authenticate immed
 | **Fresh Auth** | New JWT token generated on every request |
 | **Safe Mode** | All wallet actions require explicit user confirmation |
 
-**Recommendations for first-time users:**
-- Use browser auth (`emblemai` with no flags) over password-in-ENV for interactive use
-- Start with a test wallet (use a throwaway password) before connecting significant assets
-- If using `EMBLEM_PASSWORD` in automation, restrict the host environment and use least-privilege access
-
 ---
 
 ## File Locations
@@ -508,6 +503,99 @@ emblemai --agent -m "Show my portfolio"
 # Reset conversation history
 emblemai --reset
 ```
+
+---
+
+## Security Advisory
+
+This section explains the trust model, what happens on your machine, and how to run the agent securely.
+
+### Trust Model
+
+Emblem Agent Wallet is an open-source CLI published by [EmblemCompany](https://github.com/EmblemCompany) on both npm and GitHub. You can verify the package before installing:
+
+- **npm registry**: [@emblemvault/agentwallet](https://www.npmjs.com/package/@emblemvault/agentwallet) -- check the publisher, version history, and download stats
+- **Source code**: [github.com/EmblemCompany/EmblemAi-AgentWallet](https://github.com/EmblemCompany/EmblemAi-AgentWallet) -- full source is public and auditable
+- **Homepage**: [emblemvault.dev](https://emblemvault.dev) -- the project homepage with documentation
+
+The npm package and GitHub repository are maintained by the same organization. You can compare the published package contents against the source repository at any time using `npm pack --dry-run` or by inspecting `node_modules/@emblemvault/agentwallet` after install.
+
+### What Happens During Installation
+
+`npm install -g @emblemvault/agentwallet` installs the CLI binary `emblemai` globally. Like all global npm packages, this runs on your machine with your user permissions. The package has no `postinstall` scripts -- it only places the CLI binary and its dependencies.
+
+### What Happens During Authentication
+
+**Browser auth** (recommended): The CLI starts a temporary local server on `127.0.0.1:18247` (localhost only, not network-accessible) to receive the auth callback from your browser. This server runs only during the login flow and handles a single request. The browser opens the EmblemVault auth modal where you authenticate directly with the EmblemVault service. On success, a session JWT is returned to the local server and saved to disk.
+
+**Password auth**: The password is sent to EmblemVault's auth API over HTTPS. A session JWT is returned. If using the `-p` flag, the password is also encrypted and stored locally for future sessions.
+
+In both cases, no credentials are sent to any third party. Authentication is strictly between your machine and the EmblemVault auth service.
+
+### What Gets Stored on Disk
+
+All files are created under `~/.emblemai/` with restrictive permissions:
+
+| File | What It Contains | How It's Protected |
+|------|-----------------|-------------------|
+| `.env` | Your EMBLEM_PASSWORD | Encrypted with AES-256-GCM via [dotenvx](https://dotenvx.com/). The password is never stored in plaintext. |
+| `.env.keys` | The AES decryption key for `.env` | File permissions `chmod 600` (owner-only). This key never leaves your machine and is never transmitted over the network. |
+| `session.json` | JWT access token + refresh token | File permissions `chmod 600`. The JWT expires after 15 minutes and is automatically refreshed. The refresh token is valid for 7 days. Logging out deletes this file. |
+| `history/*.json` | Conversation history | File permissions `chmod 600`. Contains your chat messages with the AI. No credentials are stored in history. |
+
+The `~/.emblemai/` directory itself is created with `chmod 700` (owner-only access).
+
+### How Sessions Work
+
+The auth session uses short-lived JWTs (15-minute expiry) that are automatically refreshed using a 7-day refresh token. This means:
+
+- If your session file is compromised, the attacker has at most 7 days of access (refresh token expiry), not indefinite access
+- The JWT is rotated frequently, limiting the window of exposure for any single token
+- Logging out (`/auth` > Logout) immediately invalidates the local session and deletes the file
+- Each refresh issues a new refresh token and invalidates the previous one (rotation)
+
+### Safe Mode and Transaction Confirmation
+
+The agent operates in **safe mode by default**. This means:
+
+- **All wallet-modifying actions require your explicit confirmation** before execution -- including swaps, sends, transfers, order placement, signing, and DeFi operations
+- **Read-only operations execute immediately** without confirmation -- balance checks, address lookups, market data, portfolio views
+- The agent will present the full details of any transaction (amounts, addresses, fees) and wait for your approval before submitting
+- There is no "auto-execute" mode -- every transaction requires a human in the loop
+
+### Password Hygiene
+
+Your EMBLEM_PASSWORD is the master key to your wallet. Treat it with the same care as a private key or seed phrase:
+
+- **Use a strong, unique password** (minimum 16 characters). A passphrase of 4+ random words is recommended
+- **Do not reuse passwords** from other services. Your EMBLEM_PASSWORD should be unique to EmblemVault
+- **Store your password securely** using a password manager. The CLI encrypts it on disk, but you should have a backup in case you lose access to the machine
+- **If using `EMBLEM_PASSWORD` as an environment variable** in automation, ensure the host environment is secured -- restrict access to the machine, use process isolation, and avoid logging environment variables
+- **Prefer browser auth for interactive use** -- it avoids placing the password in shell history or environment variables
+- **Different passwords create different wallets** -- this is by design. Use this to separate funds by purpose (e.g., one wallet for daily use, another for long-term holdings)
+
+### Verifying the Package
+
+Before or after installation, you can inspect exactly what the package contains:
+
+```bash
+# View package contents without installing
+npm pack @emblemvault/agentwallet --dry-run
+
+# After installing, inspect the source
+ls $(npm root -g)/@emblemvault/agentwallet/
+
+# Compare against GitHub source
+git clone https://github.com/EmblemCompany/EmblemAi-AgentWallet.git
+diff -r node_modules/@emblemvault/agentwallet EmblemAi-AgentWallet/publish
+```
+
+### Reporting Security Issues
+
+If you discover a security vulnerability, please report it responsibly:
+
+- **GitHub**: Open an issue at [github.com/EmblemCompany/EmblemAi-AgentWallet/issues](https://github.com/EmblemCompany/EmblemAi-AgentWallet/issues)
+- **Discord**: Report in the security channel at [discord.gg/Q93wbfsgBj](https://discord.gg/Q93wbfsgBj)
 
 ---
 
