@@ -1,4 +1,4 @@
-# Emblem Agent Wallet
+# EmblemAi Agent Wallet v2
 
 Give AI agents their own crypto wallets. 250+ trading tools across 7 blockchains, powered by [Agent Hustle](https://agenthustle.ai).
 
